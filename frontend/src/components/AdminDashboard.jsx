@@ -58,7 +58,11 @@ export default function AdminDashboard({ onBack }) {
         <div className="flex gap-3">
           <button
             onClick={() => {
-              fetch('http://localhost:5001/api/admin/export', { headers: { 'x-admin-secret': secret } })
+              fetch(`${import.meta.env.VITE_API_URL}/admin/export`, {
+                headers: {
+                  'x-admin-secret': secret
+                }
+              })
                 .then(r => r.blob())
                 .then(blob => {
                   const url = URL.createObjectURL(blob);
