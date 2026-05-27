@@ -56,7 +56,7 @@ export default function UserDetailsModal({ onSubmit, loading }) {
               <select className="input-field" value={form.gender}
                 onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}>
                 <option value="" disabled>Gender</option>
-                {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map(g => (
+                {['Male', 'Female', 'Others'].map(g => (
                   <option key={g} value={g} className="bg-slate-800">{g}</option>
                 ))}
               </select>

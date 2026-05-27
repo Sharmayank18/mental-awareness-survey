@@ -17,6 +17,12 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  /*... is called the spread operator in JavaScript.
+It is used to:
+copy values
+expand arrays
+expand objects */
+
   const handleAnswer = (value) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);

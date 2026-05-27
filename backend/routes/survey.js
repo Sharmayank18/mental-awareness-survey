@@ -29,15 +29,18 @@ const SUGGESTIONS = {
 // POST /api/survey — submit survey
 router.post('/', async (req, res) => {
   try {
+    //ye data front end se aayega backend ke pass
     const { name, email, age, gender, answers } = req.body;
     if (!name || !email || !age || !gender || !answers?.length) {
       return res.status(400).json({ error: 'All fields are required' });
     }
+    //reduce() combines array into single value.
     const score = answers.reduce((sum, a) => sum + a, 0);
     const maxScore = answers.length * 3;
     const category = getCategory(score, maxScore);
-
+//Creates MongoDB document.
     const survey = await Survey.create({ name, email, age, gender, answers, score, category });
+    //ye backend se frontend pe jaayega
     res.status(201).json({
       id: survey._id,
       name,
@@ -74,38 +77,115 @@ router.get('/:id/pdf', async (req, res) => {
     const survey = await Survey.findById(req.params.id);
     if (!survey) return res.status(404).json({ error: 'Not found' });
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ 
+      margin: 50,
+      size: 'A4',
+      bufferPages: true
+    });
+    
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="wellness-report-${survey._id}.pdf"`);
     doc.pipe(res);
 
-    // Header
-    doc.fontSize(22).fillColor('#4f46e5').text('Mental Wellness Report', { align: 'center' });
+    // Soft gradient background
+    doc.rect(0, 0, doc.page.width, doc.page.height).fill('#f8f9ff');
+    
+    // Decorative header background
+    doc.rect(0, 0, doc.page.width, 140).fill('#eef2ff');
+    
+    // Title
+    doc.fontSize(24).fillColor('#4f46e5').font('Helvetica-Bold')
+       .text('Mental Wellness Report', 50, 40, { align: 'center' });
+    
     doc.moveDown(0.5);
-    doc.fontSize(10).fillColor('#6b7280').text('This survey is not a medical diagnosis. It is intended only for awareness and self-reflection.', { align: 'center' });
-    doc.moveDown(1);
+    doc.fontSize(9).fillColor('#6b7280').font('Helvetica')
+       .text('This survey is not a medical diagnosis. It is intended only for awareness and self-reflection.', 
+             { align: 'center', width: doc.page.width - 100 });
 
-    // User info
-    doc.fontSize(14).fillColor('#111827').text(`Name: ${survey.name}`);
-    doc.text(`Email: ${survey.email}`);
-    doc.text(`Age: ${survey.age}  |  Gender: ${survey.gender}`);
-    doc.text(`Date: ${new Date(survey.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' })}`);
-    doc.moveDown(1);
+    // User info card
+    const cardY = 160;
+    doc.roundedRect(50, cardY, doc.page.width - 100, 80, 8).fill('#ffffff');
+    doc.roundedRect(50, cardY, doc.page.width - 100, 80, 8).stroke('#e5e7eb');
+    
+    doc.fontSize(11).fillColor('#111827').font('Helvetica-Bold')
+       .text('Personal Information', 65, cardY + 15);
+    
+    doc.fontSize(10).fillColor('#4b5563').font('Helvetica')
+       .text(`Name: ${survey.name}`, 65, cardY + 35)
+       .text(`Age: ${survey.age}`, 65, cardY + 52)
+       .text(`Gender: ${survey.gender}`, 220, cardY + 52)
+       .text(`Date: ${new Date(survey.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' })}`, 65, cardY + 69);
 
-    // Score
+    // Score card
+    const scoreY = cardY + 100;
     const maxScore = survey.answers.length * 3;
-    doc.fontSize(16).fillColor('#4f46e5').text(`Score: ${survey.score} / ${maxScore}`);
-    doc.fontSize(14).fillColor('#111827').text(`Category: ${survey.category}`);
-    doc.moveDown(1);
+    const pct = Math.round((survey.score / maxScore) * 100);
+    
+    doc.roundedRect(50, scoreY, doc.page.width - 100, 90, 8).fill('#ffffff');
+    doc.roundedRect(50, scoreY, doc.page.width - 100, 90, 8).stroke('#e5e7eb');
+    
+    doc.fontSize(11).fillColor('#111827').font('Helvetica-Bold')
+       .text('Your Score', 65, scoreY + 15);
+    
+    doc.fontSize(28).fillColor('#4f46e5').font('Helvetica-Bold')
+       .text(`${pct}%`, 65, scoreY + 35);
+    
+    doc.fontSize(10).fillColor('#6b7280').font('Helvetica')
+       .text(`${survey.score} out of ${maxScore}`, 65, scoreY + 70);
+    
+    // Category badge
+    doc.roundedRect(doc.page.width - 220, scoreY + 35, 150, 30, 15)
+       .fillAndStroke('#eef2ff', '#4f46e5');
+    doc.fontSize(10).fillColor('#4f46e5').font('Helvetica-Bold')
+       .text(survey.category, doc.page.width - 215, scoreY + 43, { width: 140, align: 'center' });
 
-    // Feedback
-    doc.fontSize(12).fillColor('#374151').text('Feedback:', { underline: true });
-    doc.fontSize(11).fillColor('#4b5563').text(FEEDBACK[survey.category]);
-    doc.moveDown(1);
+    // Feedback section
+    const feedbackY = scoreY + 110;
+    doc.roundedRect(50, feedbackY, doc.page.width - 100, 75, 8).fill('#ffffff');
+    doc.roundedRect(50, feedbackY, doc.page.width - 100, 75, 8).stroke('#e5e7eb');
+    
+    doc.fontSize(11).fillColor('#4f46e5').font('Helvetica-Bold')
+       .text('Feedback', 65, feedbackY + 15);
+    
+    doc.fontSize(9).fillColor('#374151').font('Helvetica')
+       .text(FEEDBACK[survey.category], 65, feedbackY + 35, { 
+         width: doc.page.width - 130, 
+         align: 'left',
+         lineGap: 2
+       });
 
-    // Suggestions
-    doc.fontSize(12).fillColor('#374151').text('Wellness Suggestions:', { underline: true });
-    SUGGESTIONS[survey.category].forEach(s => doc.fontSize(11).fillColor('#4b5563').text(`• ${s}`));
+    // Suggestions section
+    const suggestionsY = feedbackY + 95;
+    const suggestions = SUGGESTIONS[survey.category];
+    const suggestionHeight = 45 + (suggestions.length * 18);
+    
+    doc.roundedRect(50, suggestionsY, doc.page.width - 100, suggestionHeight, 8).fill('#ffffff');
+    doc.roundedRect(50, suggestionsY, doc.page.width - 100, suggestionHeight, 8).stroke('#e5e7eb');
+    
+    doc.fontSize(11).fillColor('#4f46e5').font('Helvetica-Bold')
+       .text('Wellness Suggestions', 65, suggestionsY + 15);
+    
+    let yPos = suggestionsY + 38;
+    suggestions.forEach((s, i) => {
+      doc.fontSize(9).fillColor('#374151').font('Helvetica')
+         .text(`${i + 1}.`, 70, yPos)
+         .text(s, 85, yPos, { width: doc.page.width - 150 });
+      yPos += 18;
+    });
+
+    // Footer
+    const footerY = doc.page.height - 60;
+    doc.fontSize(7).fillColor('#9ca3af').font('Helvetica')
+       .text('Generated by MindCheck - Mental Awareness Survey Platform', 50, footerY, { 
+         align: 'center',
+         width: doc.page.width - 100
+       });
+    
+    doc.fontSize(7).fillColor('#d1d5db')
+       .text('If you need professional help, please consult a licensed mental health professional.', 50, footerY + 12, {
+         align: 'center',
+         width: doc.page.width - 100
+       });
 
     doc.end();
   } catch (err) {
