@@ -26,21 +26,21 @@ const SUGGESTIONS = {
   'High Mental Wellness Concern': ['Consult a mental health professional', 'Establish a daily routine', 'Limit news/social media', 'Prioritize sleep and nutrition']
 };
 
-// POST /api/survey — submit survey
+// POST /api/survey — submit survey (only after email verified)
 router.post('/', async (req, res) => {
   try {
-    //ye data front end se aayega backend ke pass
-    const { name, email, age, gender, answers } = req.body;
+    const { name, email, age, gender, answers, emailVerified } = req.body;
     if (!name || !email || !age || !gender || !answers?.length) {
       return res.status(400).json({ error: 'All fields are required' });
     }
-    //reduce() combines array into single value.
+    if (!emailVerified) {
+      return res.status(403).json({ error: 'Email must be verified before submitting' });
+    }
     const score = answers.reduce((sum, a) => sum + a, 0);
     const maxScore = answers.length * 3;
     const category = getCategory(score, maxScore);
-//Creates MongoDB document.
-    const survey = await Survey.create({ name, email, age, gender, answers, score, category });
-    //ye backend se frontend pe jaayega
+
+    const survey = await Survey.create({ name, email, age, gender, answers, score, category, emailVerified: true });
     res.status(201).json({
       id: survey._id,
       name,

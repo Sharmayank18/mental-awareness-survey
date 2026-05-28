@@ -4,20 +4,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-/*CORS allows frontend and backend to communicate.
-
-Without CORS:
-
-browser blocks requests */
-app.use(cors({
-  origin: "*",
-  credentials: true
-}));
+app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/survey', require('./routes/survey'));
 app.use('/api/admin', require('./routes/admin'));
-//this is just for testing backend
+
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
 
 mongoose.connect(process.env.MONGO_URI)
