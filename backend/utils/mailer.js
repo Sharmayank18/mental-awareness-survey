@@ -1,15 +1,24 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD // Gmail App Password (not account password)
+    pass: process.env.GMAIL_APP_PASSWORD
   }
 });
 
+console.log('📧 Email Config:', {
+  user: process.env.GMAIL_USER,
+  passExists: !!process.env.GMAIL_APP_PASSWORD
+});
+
 const sendOtpEmail = async (to, otp) => {
-  await transporter.sendMail({
+  console.log('📨 Attempting to send email to:', to);
+  
+  const result = await transporter.sendMail({
     from: `"MindCheck Survey" <${process.env.GMAIL_USER}>`,
     to,
     subject: 'Your MindCheck Verification Code',
@@ -25,6 +34,8 @@ const sendOtpEmail = async (to, otp) => {
       </div>
     `
   });
+  
+  console.log('✅ Email sent successfully:', result.messageId);
 };
 
 module.exports = { sendOtpEmail };
