@@ -4,7 +4,8 @@ import axios from 'axios';
 import OtpVerification from './OtpVerification';
 
 const GMAIL_RE = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-const API = 'http://localhost:5001/api/auth';
+const API = `${import.meta.env.VITE_API_URL}/auth`;
+
 
 // step: 'details' | 'otp'
 export default function UserDetailsModal({ onSubmit, loading }) {
