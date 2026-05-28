@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const API = 'http://localhost:5001/api/auth';
+const API = `${import.meta.env.VITE_API_URL}/auth`;
 const OTP_TTL = 120; // seconds
 const RESEND_COOLDOWN = 60; // seconds
 
