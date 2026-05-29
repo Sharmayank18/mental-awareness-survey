@@ -5,6 +5,7 @@ const surveySchema = new mongoose.Schema({
   email: { type: String, required: true, trim: true, lowercase: true },
   age: { type: Number, required: true },
   gender: { type: String, required: true, enum: ['Male', 'Female', 'Others'] },
+  country: { type: String, required: true, trim: true },
   answers: [{ type: Number, min: 0, max: 3 }],
   score: { type: Number, required: true },
   category: {

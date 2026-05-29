@@ -1,9 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export default function UserDetailsModal({ onSubmit, loading }) {
-  const [form, setForm] = useState({ name: '', email: '', age: '', gender: '' });
+  const [form, setForm] = useState({ name: '', email: '', age: '', gender: '', country: '' });
   const [errors, setErrors] = useState({});
+  const [loadingCountry, setLoadingCountry] = useState(true);
+
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        const countryCode = data.country || '';
+        const countryName = data.country_name || 'Unknown';
+        const flag = countryCode ? String.fromCodePoint(...[...countryCode.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0))) : '🌍';
+        setForm(f => ({ ...f, country: `${flag} ${countryName}` }));
+        setLoadingCountry(false);
+      })
+      .catch(() => {
+        setForm(f => ({ ...f, country: '🌍 Unknown' }));
+        setLoadingCountry(false);
+      });
+  }, []);
 
   const validate = () => {
     const e = {};
@@ -43,6 +60,10 @@ export default function UserDetailsModal({ onSubmit, loading }) {
             <input className="input-field" type="email" placeholder="Email Address"
               value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
             {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+          </div>
+          <div>
+            <input className="input-field bg-slate-800/50" placeholder="Country" 
+              value={loadingCountry ? 'Detecting...' : form.country} disabled />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

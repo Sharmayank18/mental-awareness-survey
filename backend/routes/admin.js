@@ -55,10 +55,13 @@ router.get('/analytics', auth, async (req, res) => {
 router.get('/export', auth, async (req, res) => {
   try {
     const surveys = await Survey.find().sort({ createdAt: -1 });
-    const header = 'Name,Email,Age,Gender,Score,Category,Date\n';
-    const rows = surveys.map(s =>
-      `"${s.name}","${s.email}",${s.age},"${s.gender}",${s.score},"${s.category}","${new Date(s.createdAt).toISOString()}"`
-    ).join('\n');
+    const header = 'Name,Email,Age,Gender,Country,Score,Category,Date,Time\n';
+    const rows = surveys.map(s => {
+      const date = new Date(s.createdAt);
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const timeStr = date.toTimeString().split(' ')[0]; // HH:MM:SS in 24-hour format
+      return `"${s.name}","${s.email}",${s.age},"${s.gender}","${s.country}",${s.score},"${s.category}","${dateStr}","${timeStr}"`;
+    }).join('\n');
     res.setHeader('Content-Type', 'text/csv');
     //this header tells browser to download file instead of showing in browser, and gives it a name
     res.setHeader('Content-Disposition', 'attachment; filename="survey-export.csv"');

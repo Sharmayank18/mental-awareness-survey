@@ -29,15 +29,15 @@ const SUGGESTIONS = {
 // POST /api/survey — submit survey
 router.post('/', async (req, res) => {
   try {
-    const { name, email, age, gender, answers } = req.body;
-    if (!name || !email || !age || !gender || !answers?.length) {
+    const { name, email, age, gender, country, answers } = req.body;
+    if (!name || !email || !age || !gender || !country || !answers?.length) {
       return res.status(400).json({ error: 'All fields are required' });
     }
     const score = answers.reduce((sum, a) => sum + a, 0);
     const maxScore = answers.length * 3;
     const category = getCategory(score, maxScore);
 
-    const survey = await Survey.create({ name, email, age, gender, answers, score, category });
+    const survey = await Survey.create({ name, email, age, gender, country, answers, score, category });
     res.status(201).json({
       id: survey._id,
       name,
@@ -111,6 +111,7 @@ router.get('/:id/pdf', async (req, res) => {
        .text(`Name: ${survey.name}`, 65, cardY + 35)
        .text(`Age: ${survey.age}`, 65, cardY + 52)
        .text(`Gender: ${survey.gender}`, 220, cardY + 52)
+       .text(`Country: ${survey.country}`, 350, cardY + 52)
        .text(`Date: ${new Date(survey.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' })}`, 65, cardY + 69);
 
     // Score card

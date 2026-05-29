@@ -112,7 +112,7 @@ export default function AdminDashboard({ onBack }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 text-white/50 text-left">
-                {['Name', 'Email', 'Age', 'Gender', 'Score', 'Category', 'Date'].map(h => (
+                {['Name', 'Email', 'Age', 'Gender', 'Country', 'Score', 'Category', 'Date'].map(h => (
                   <th key={h} className="px-4 py-3 font-medium">{h}</th>
                 ))}
               </tr>
@@ -124,6 +124,7 @@ export default function AdminDashboard({ onBack }) {
                   <td className="px-4 py-3 text-white/60">{r.email}</td>
                   <td className="px-4 py-3 text-white/60">{r.age}</td>
                   <td className="px-4 py-3 text-white/60">{r.gender}</td>
+                  <td className="px-4 py-3 text-white/60">{r.country}</td>
                   <td className="px-4 py-3 text-white">{r.score}</td>
                   <td className="px-4 py-3">
                     <span className="px-2 py-1 rounded-full text-xs font-medium"
@@ -135,7 +136,7 @@ export default function AdminDashboard({ onBack }) {
                 </tr>
               ))}
               {!results.length && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-white/30">No results found</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-white/30">No results found</td></tr>
               )}
             </tbody>
           </table>
