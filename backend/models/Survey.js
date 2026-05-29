@@ -12,7 +12,6 @@ const surveySchema = new mongoose.Schema({
     required: true,
     enum: ['Healthy Mindset', 'Mild Stress', 'Moderate Emotional Distress', 'High Mental Wellness Concern']
   },
-  emailVerified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -7,7 +7,6 @@ const app = express();
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-app.use('/api/auth', require('./routes/auth'));
 app.use('/api/survey', require('./routes/survey'));
 app.use('/api/admin', require('./routes/admin'));
 

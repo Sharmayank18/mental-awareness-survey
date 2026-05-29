@@ -26,21 +26,18 @@ const SUGGESTIONS = {
   'High Mental Wellness Concern': ['Consult a mental health professional', 'Establish a daily routine', 'Limit news/social media', 'Prioritize sleep and nutrition']
 };
 
-// POST /api/survey — submit survey (only after email verified)
+// POST /api/survey — submit survey
 router.post('/', async (req, res) => {
   try {
-    const { name, email, age, gender, answers, emailVerified } = req.body;
+    const { name, email, age, gender, answers } = req.body;
     if (!name || !email || !age || !gender || !answers?.length) {
       return res.status(400).json({ error: 'All fields are required' });
-    }
-    if (!emailVerified) {
-      return res.status(403).json({ error: 'Email must be verified before submitting' });
     }
     const score = answers.reduce((sum, a) => sum + a, 0);
     const maxScore = answers.length * 3;
     const category = getCategory(score, maxScore);
 
-    const survey = await Survey.create({ name, email, age, gender, answers, score, category, emailVerified: true });
+    const survey = await Survey.create({ name, email, age, gender, answers, score, category });
     res.status(201).json({
       id: survey._id,
       name,
