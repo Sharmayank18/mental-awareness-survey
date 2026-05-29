@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const API = 'http://localhost:5001/api/auth';
+const API = `${import.meta.env.VITE_API_URL}/auth`;
 const OTP_TTL = 120; // seconds
 const RESEND_COOLDOWN = 60; // seconds
 
@@ -35,7 +35,7 @@ export default function OtpVerification({ email, onVerified, onBack }) {
     const next = [...digits];
     next[i] = val;
     setDigits(next);
-    if (i < 3) inputRefs.current[i + 1]?.focus();
+    if (val && i < 3) inputRefs.current[i + 1]?.focus();
   };
 
   const handleKeyDown = (i, e) => {
