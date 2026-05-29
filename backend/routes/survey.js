@@ -107,11 +107,14 @@ router.get('/:id/pdf', async (req, res) => {
     doc.fontSize(11).fillColor('#111827').font('Helvetica-Bold')
        .text('Personal Information', 65, cardY + 15);
     
+    // Remove emoji from country for PDF (emojis don't render properly in PDFKit)
+    const countryText = survey.country.replace(/[\u{1F1E6}-\u{1F1FF}]/gu, '').trim();
+    
     doc.fontSize(10).fillColor('#4b5563').font('Helvetica')
        .text(`Name: ${survey.name}`, 65, cardY + 35)
        .text(`Age: ${survey.age}`, 65, cardY + 52)
        .text(`Gender: ${survey.gender}`, 220, cardY + 52)
-       .text(`Country: ${survey.country}`, 350, cardY + 52)
+       .text(`Country: ${countryText}`, 350, cardY + 52)
        .text(`Date: ${new Date(survey.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' })}`, 65, cardY + 69);
 
     // Score card
